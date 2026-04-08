@@ -1,0 +1,12 @@
+streamlit
+langgraph
+langchain_openai
+duckduckgo-search
+python-dotenv
+typing-extensions
+pydantic
+networkx
+matplotlib
+langgraph-checkpoint-sqlite
+langchain-community
+

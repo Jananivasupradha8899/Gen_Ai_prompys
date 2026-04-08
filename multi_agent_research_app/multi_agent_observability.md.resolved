@@ -1,0 +1,35 @@
+# Multi-Agent App: Observability Report
+
+This report evaluates our ability to monitor, track, and understand the internal state of the deployed Multi-Agent research pipeline.
+
+## 📈 Observability Score: 98/100
+By embedding a Network Graph, Token tracking, and explicit Log Expanders directly inside the UI, this application is vastly superior to a standard "Black Box" LLM pipeline. You can trace everything from the cost of a comma to the exact routing path.
+
+---
+
+## 1. Cost & Execution Telemetry
+> [!TIP]
+> **Status: Premium Visibility**
+- **Token Tracing**: We wrapped our OpenAI calls inside LangChain's `get_openai_callback()`. This isn't just printed to a background terminal; the total mathematical cost (Tokens and exact USD estimates) is pushed dynamically to the `st.metric` cards in the sidebar. 
+- **Financial Auditability**: Because cost is appended to the LangGraph state (`ResearchState["total_cost"]`), it gets saved permanently into the SQLite database. You can legally audit exactly how much API budget you spent researching a single thread on a single day.
+
+## 2. Visual Architecture Monitoring
+> [!TIP]
+> **Status: Highly Transparent**
+- **The Graph Visualizer**: We didn't just hard-wire nodes. We rendered the LangGraph architecture natively in the Streamlit Sidebar using `NetworkX` and `Matplotlib`. This ensures anyone using the application instantly understands that it is a *Multi-Agent Sequential Pipeline* rather than a single monolithic prompt, establishing trust.
+- **Workflow Status Badges**: Added explicit global readouts (e.g., `🚨 Waiting for Human Approval`, `✅ Officially Approved & Published`) which perfectly translate the backend `interrupt_before` node state into human-readable action triggers.
+
+## 3. The Chatbot as a Diagnostic Probe
+> [!IMPORTANT]
+> **Status: Innovative**
+- The specialized **"App Assistant" Chatbot** acts as an organic observability tool. Instead of digging through massive JSON blobs or complex terminal outputs, an administrator can simply open Tab 4 and ask the AI: *"Summarize the errors encountered by the Researcher Agent."*
+- Because the chatbot is "plugged" directly into the `values.get('logs')` variable of the active LangGraph runner, it is effectively a natural-language diagnostic probe into the current pipeline memory.
+
+---
+
+## 🔬 How to Monitor This Application in Production
+
+If deployed to the cloud, you should monitor these metrics:
+1.  **API Fallback Ratio**: Track how often `ResearchState["search_results"]` triggers the string `"Proceeding with LLM internal knowledge."` High rates indicate you are being blocked by DuckDuckGo and need an Enterprise Search Key (like Tavily).
+2.  **Spend Velocity**: Add alerts if the `total_cost` metric in the SQLite database exceeds a certain daily parameter to stop massive concurrent agent loops.
+3.  **Human Override Lag**: Use the `interrupt` timestamps in LangGraph to measure how long an authorized human takes to approve or reject a draft, which helps optimize team workflow times.

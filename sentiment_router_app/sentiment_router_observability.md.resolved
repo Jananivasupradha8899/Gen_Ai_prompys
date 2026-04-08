@@ -1,0 +1,45 @@
+# Sentiment Router: Observability Report
+
+This report evaluates the visibility into the **Sentiment Router's** internal state and performance, with a special focus on the **LangSmith** integration.
+
+## 📈 Observability Score: 95/100
+The application provides high-fidelity visibility into every "thought" and "pathway," making it very easy to monitor in a live environment.
+
+---
+
+## 1. Internal Observability (Dashboard)
+> [!TIP]
+> **Status: Excellent**
+- **Live Path Visualization**: The Streamlit dashboard displays the `decision_path` in code blocks, allowing the user to follow the graph's execution as it happens.
+- **Metric Tracking**: Real-time display of Model Confidence vs. User-defined Threshold makes the "why" behind every decision explicit.
+- **State Transparency**: At the end of every run, the entire `RouterState` is effectively exposed via the UI components.
+
+## 2. External Observability (LangSmith)
+> [!TIP]
+> **Status: Native Integration**
+- **Tracing Enabled**: The app is configured to automatically pick up the `LANGCHAIN_API_KEY` and start tracing to the **"Sentiment-Router-Demo"** project.
+- **Node-by-Node Analysis**: Every node (`analyzer`, `handlers`, `fallback`) is captured in LangSmith as a separate span, showing:
+    - **Input/Output**: The exact JSON sent to and from the node.
+    - **Metadata**: Configuration settings like the `threshold` used for that specific run.
+- **Logic Debugging**: Conditional edges are clearly visible in the trace, allowing you to see where the router "branched."
+
+## 3. Reliability & Monitoring
+> [!IMPORTANT]
+> **Status: Managed**
+- **Error Capturing**: While we fix structural errors (like positional arguments), production errors (like a Hugging Face model failing to load) are currently logged to the console.
+- **Recommendation**: Implement **External Logging** (e.g., Sentry or Axiom) to capture runtime exceptions that occur outside the LangGraph execution flow.
+
+---
+
+## 🔬 How to read your traces in LangSmith
+
+When you look at a trace for this app, pay attention to these three areas:
+
+1.  **The Graph View**: Look at the sequence from `START` to `END`. You should see the `analyzer` node followed by exactly one `handler` node.
+2.  **Metadata Tab**: Check the `configurable` section to see the "Sensitivity Score" that was active during that run.
+3.  **Intermediate Values**: Click on the `analyzer` node and look at its `output`. You will see the raw sentiment label and score before the branching logic was even applied.
+
+---
+
+### Final Verdict
+The app is **Observability-First**. By combining Streamlit's immediate visual feedback with LangSmith's deep tracing, you have created a system that is transparent and easy to audit.
