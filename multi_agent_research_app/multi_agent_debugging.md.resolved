@@ -1,0 +1,36 @@
+# Multi-Agent App: Debugging Report
+
+This report documents the major hurdles we encountered and resolved while scaling the research workflows from basic logic to interactive web apps.
+
+## 🐛 Resolved Critical: DuckDuckGo Rate Limits & "Slow Web"
+### Description
+During early runs, the agent workflow appeared to "freeze," taking wildly varying times to return documents. Occasionally, it failed to return anything at all.
+
+### Root Cause
+`DDGS()` is querying live internet architecture dynamically. Sometimes target sites block scraping, or DuckDuckGo rate-limits frequent requests, causing HTTP timeouts.
+
+### The Fix
+1. **Scope Reduction**: Lowered `max_results` from 3 to a tunable slider (defaulting to 2) to limit the number of sites the scraper attempts to ping.
+2. **Defensive Catching**: Enclosed the scraping logic in a `try/except` block. If the connection times out, we intercept the error string and gracefully prompt the LLM to use its internal knowledge instead of crashing out.
+
+---
+
+## 🏗️ New Debugging Architectures
+
+### 1. The Raw Data Expander
+A major pain point in Multi-Agent workflows is understanding *what* the agents actually saw vs. what they hallucinated.
+- We added a Streamlit expander: `🔍 View Raw Web Research Data`. This logs the exact literal bytes pulled from DuckDuckGo before the OpenAI model ever sees it. If the final report looks wrong, checking this expander instantly tells you if the problem was the "Researcher" grabbing bad sites, or the "Writer" parsing it poorly.
+
+### 2. Live API Diagnostics
+We integrated `langchain_community.callbacks.manager.get_openai_callback()` as a telemetry wrapper around our agents. 
+- If the application hangs or throws a silent model failure, tracking if Token usage jumped from 0 up to 1000 acts as a literal "heartbeat monitor" to confirm that the API is indeed firing correctly over the network.
+
+### 3. The Chatbot Prompt Injector
+When injecting the chatbot, we ran into an issue where the chatbot had "amnesia" between pipeline runs.
+- **The Fix**: We didn't build a complex database query. Instead, we use `values.get("logs")` to pull the active LangGraph thread object and string-inject it directly into the Chatbot's root system prompt every time you hit 'Enter'. The Chatbot technically reads the entire agent history dynamically with every single UI refresh. 
+
+---
+
+## 💡 Best Practices for Multi-Agent Debugging
+1. **Never hide intermediate steps**: Always render the exact prompt context fed to an LLM somewhere in the UI. 
+2. **Isolate the LLM from Network**: Ensure your API calls (OpenAI) and your Web Calls (DuckDuckGo) never share the same try/catch block. You must easily know *which* external network failed.

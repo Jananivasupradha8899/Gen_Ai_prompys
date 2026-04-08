@@ -1,0 +1,60 @@
+# LangGraph ETL Pipeline: Visual Overview
+
+This document provides both a high-level conceptual infographic and a technical breakdown of how your data flows through the application.
+
+## 🎨 Conceptual Infographic
+![LangGraph ETL Pipeline Infographic](/C:/Users/Nethra/.gemini/antigravity/brain/8d40048b-6c27-476f-9213-d7cf354af545/langgraph_etl_infographic_1775626298990.png)
+
+---
+
+## 🛠 Technical Flow (The State Machine)
+
+The application uses **LangGraph** to manage the state transitions between different Python functions. Below is the internal logic flow:
+
+```mermaid
+graph TD
+    subgraph "Streamlit UI"
+    U1[User Uploads CSV] --> U2[Configures Sidebar]
+    U2 --> U3[Clicks 'Run Pipeline']
+    end
+
+    subgraph "LangGraph Pipeline"
+    U3 --> S[START]
+    S --> N1["<b>Extract Node</b><br/>Loads raw_df into state"]
+    N1 --> N2["<b>Transform Node</b><br/>Cleans/Normalizes data"]
+    N2 --> N3["<b>Load Node</b><br/>Calculates final metrics"]
+    N3 --> E[END]
+    end
+
+    subgraph "Data Storage"
+    N1 -.-> DF1[(Raw DataFrame)]
+    N2 -.-> DF2[(Processed DataFrame)]
+    end
+
+    E --> U4[Show Results & Logs]
+```
+
+## 🔍 Step-by-Step Breakdown
+
+### 1. Extract Phase
+- **Input**: CSV file from user.
+- **Node**: `extract_node`
+- **Action**: Validates the upload and initializes the `PipelineState` with the raw data.
+
+### 2. Transform Phase (The "Brain")
+- **Input**: Raw DataFrame + User Config.
+- **Node**: `transform_node`
+- **Action**: 
+    - Handles missing values (Mean/Median).
+    - Filters rows based on thresholds.
+    - Normalizes numeric scales (0 to 1).
+
+### 3. Load Phase
+- **Input**: Processed DataFrame.
+- **Node**: `load_node`
+- **Action**: Performs a final quality check and prepares the download buffer.
+
+---
+
+> [!TIP]
+> This architecture is **stateless**. This means you can run multiple pipelines in parallel or go back to a previous state without reloading the entire application.

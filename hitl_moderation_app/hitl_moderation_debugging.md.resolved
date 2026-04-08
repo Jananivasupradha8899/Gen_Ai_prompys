@@ -1,0 +1,34 @@
+# PREMIUM HITL: Debugging Report (V2)
+
+This report captures the high-intensity debugging phase where we resolved network conflicts and implemented a persistent "Memory" for the moderation queue.
+
+## 🐛 Resolved Critical: Port 8000/8001 Conflict
+
+### The Challenge
+Even after initial resolution, certain configurations were still "actively refusing transitions" or failing to bind.
+
+### The Final Fix
+- **Hard-Binding to 127.0.0.1**: Switched from `0.0.0.0` to `127.0.0.1` inside the `uvicorn.run` call, which solved several Windows-specific networking restrictions.
+- **Python Environment Sync**: We identified a mismatch between the Global Python and the Workspace Python. We forced a manual pip-reinstall using `python -m pip` to ensure the runtime had the correct library versions.
+
+---
+
+## 🏗️ New Debugging Architectures
+
+### 1. JSON Persistence Probe
+With the introduction of `threads.json`, we now have a **Physical Debug Log**. 
+- **Debug Technique**: If a thread is "missing" from the dashboard, you can open `threads.json` directly. If the ID is there but marked as `completed`, you know the Resume logic worked but the state display is lagging.
+
+### 2. The Polling "Heartbeat"
+We added a `datetime.now()` timestamp to the sidebar.
+- **Why**: This is a built-in debugging tool. If the timestamp stops updating, you know the Streamlit process has hung or disconnected from the FastAPI backend.
+
+### 3. Isolation Testing (`verify_hitl.py`)
+Still the primary tool for testing LangGraph logic without the noise of HTTP requests. It confirmed that the **"Interrupt"** happens exactly where it is supposed to.
+
+---
+
+## 🛠️ Troubleshooting Checklist for Premium HITL
+1. **Server Unreachable?** Check if `threads.json` is being created. If not, the server didn't finish initialization.
+2. **Auto-Poll Stalling?** Toggle the "Auto-Poll" switch in the sidebar Off and then On again to force a UI reset.
+3. **Empty Queue?** Check the logs in the FastAPI terminal. If you see `GET /pending 200 OK`, the dashboard is connected, but the graph hasn't flagged any content yet.

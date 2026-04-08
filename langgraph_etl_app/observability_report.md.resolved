@@ -1,0 +1,65 @@
+# Observability & Monitoring Report
+
+This report evaluates how effectively the **LangGraph ETL Pipeline** can be monitored, debugged, and audited during execution.
+
+## 📈 Observability Score: 85/100
+The application has strong "internal observability" (the UI shows what's happening), but there is room for better "external observability" (exporting telemetry to other tools).
+
+---
+
+## 1. Traceability (Execution Flow)
+> [!TIP]
+> **Status: Excellent**
+- **Node-Level Logging**: Every node in the `StateGraph` updates a `logs` list in the common state. This allows the Streamlit UI to display a step-by-step history of execution.
+- **Linear Progression**: Because the graph is linear, we can easily pinpoint exactly where a failure occurred if the process stops.
+
+## 2. State Inspection (Data Snapshots)
+> [!TIP]
+> **Status: Good**
+- **State Preservation**: LangGraph naturally preserves the state at each checkpoint. In the current UI, we display the `processed_df` and `metadata` once the pipeline finishes.
+- **Recommendation**: To improve this, we could implement **"Intermediate State Previews"**. For example, showing a "before and after" table for the `Transform` node specifically.
+
+## 3. Metrics & Data Health
+> [!TIP]
+> **Status: Good**
+- **Validation Node**: The `load_node` calculates metrics like `row_count`, `missing_values`, and `is_empty`. This gives the user immediate feedback on transformation quality.
+- **Visual Feedback**: The Streamlit `st.json` output provides a structured view of these metrics.
+
+## 4. Performance & Latency
+> [!WARNING]
+> **Status: Limited**
+- **Current State**: We currently do not track how long each node takes to execute.
+- **Recommendation**: Add a `timing` dictionary to the state. For example: `{"extract": 0.2s, "transform": 1.5s}`.
+
+---
+
+## 🚀 Advanced Integration: LangSmith
+Since this application uses **LangGraph**, it is natively compatible with **LangSmith**. 
+
+### What LangSmith would add:
+1.  **Full Trace Visualization**: A web-based UI showing the graph execution, timing, and data inputs/outputs for every run.
+2.  **Cost Tracking**: If you eventually add LLM steps (e.g., "AI Data Summarization"), LangSmith would track token usage and costs.
+3.  **A/B Testing**: You could compare two versions of your `transform_node` logic to see which one produces better data quality metrics.
+
+---
+
+## 🛠 Recommended Code Update: Performance Tracking
+To reach 100/100 observability, we should implement a simple timing mechanism. Here is the proposed logic:
+
+```python
+import time
+
+def transform_node(state: PipelineState) -> Dict[str, Any]:
+    start_time = time.time()
+    # ... processing logic ...
+    end_time = time.time()
+    
+    performance = state.get("performance", {})
+    performance["transform"] = end_time - start_time
+    return {"performance": performance, ...}
+```
+
+---
+
+### Conclusion
+The current implementation provides **immediate visibility** for the end-user via Streamlit logs. For a larger-scale deployment, I recommend adding **Performance Timing** and **LangSmith** environment variables to capture deep architectural traces.

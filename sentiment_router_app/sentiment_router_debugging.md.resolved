@@ -1,0 +1,44 @@
+# Sentiment Router: Debugging & Troubleshooting Report
+
+This report documents the major technical hurdles encountered during the development of the Sentiment Router and how they were resolved. It serves as a guide for troubleshooting similar Agentic workflows.
+
+## 🐛 Major Bug: `TypeError: analyzer_node() missing 1 required positional argument`
+
+### Description
+When transitioning from a static workflow to a **Dynamic Interactive Dashboard**, we added the `config` argument to the `analyzer_node`. However, the app crashed with a `TypeError` indicating that `config` was not being passed by LangGraph during execution.
+
+### Root Cause
+In LangGraph, node functions can receive either `(state)` or `(state, config)`. If a function is defined with two arguments but the library's internal `invoke` call doesn't "detect" that it should pass the config, it fails. This is common when using plain function signatures without type hints or when the library version performs strict checking.
+
+### Resolution
+The logic was made **"Context-Aware"**:
+```python
+def analyzer_node(state: RouterState, config: Any = None):
+    # Make config optional and handle both Dict and RunnableConfig types
+```
+By making `config` optional and adding logic to handle both dictionary and attribute-based access, the code became cross-compatible and resilient to different library versions.
+
+---
+
+## 🛠️ Debugging Tools Implemented
+
+### 1. Decision Path Logging
+We implemented a `decision_path` list within the `RouterState`. This allows us to track the **Branching History**:
+- **Log Item 1**: "Analysis: Detected sentiment 'positive'..."
+- **Log Item 2**: "Branch: Positive Handler reached."
+This "breadcrumb" approach is essential for debugging non-linear graphs where execution can jump between nodes.
+
+### 2. Validation Metrics
+We display **Model Confidence** and **Configured Threshold** side-by-side in the UI. 
+- **Debug Scenario**: User asks "Why did this go to Neutral?" 
+- **Answer**: The dashboard immediately shows `Confidence 0.45 < Threshold 0.50`, proving the threshold logic worked.
+
+### 3. Verification Script (`verify_router.py`)
+A standalone CLI script was built to test the graph logic outside of the Streamlit environment. This isolated the "NLP/Logic" bugs from the "UI/Frontend" bugs.
+
+---
+
+## 💡 Best Practices for Future Debugging
+1. **Always use Optional Config**: When defining nodes that might receive configuration, use `config: Any = None` to avoid signature mismatches.
+2. **State Over Parameters**: When passing information between an entry node and a conditional edge, store the decision variable (like `threshold`) in the **State** rather than relying on global variables.
+3. **Trace Versioning**: When using LangSmith, use the `version` or `project_name` tags to isolate your debug runs from your production logs.
