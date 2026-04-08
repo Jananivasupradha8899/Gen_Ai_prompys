@@ -1,1 +1,1 @@
-# Gen_Ai_prompys
+# Gen_Ai_prompts
