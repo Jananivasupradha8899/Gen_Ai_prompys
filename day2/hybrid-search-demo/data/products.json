@@ -1,0 +1,44 @@
+[
+    {
+        "id": "1",
+        "name": "Noise Cancelling Headphones",
+        "category": "Electronics",
+        "description": "Premium wireless headphones with advanced noise cancellation technology.",
+        "price": 299.99
+    },
+    {
+        "id": "2",
+        "name": "Ergonomic Office Chair",
+        "category": "Furniture",
+        "description": "Breathable mesh chair with lumbar support and adjustable armrests for home office.",
+        "price": 189.50
+    },
+    {
+        "id": "3",
+        "name": "Smart Fitness Watch",
+        "category": "Electronics",
+        "description": "Track your steps, heart rate, and sleep with this waterproof smartwatch.",
+        "price": 99.00
+    },
+    {
+        "id": "4",
+        "name": "Stainless Steel Water Bottle",
+        "category": "Outdoors",
+        "description": "Double-walled vacuum insulated bottle that keeps drinks cold for 24 hours.",
+        "price": 25.00
+    },
+    {
+        "id": "5",
+        "name": "Pro Yoga Mat",
+        "category": "Outdoors",
+        "description": "Extra thick non-slip mat for yoga and pilates. Eco-friendly material.",
+        "price": 45.00
+    },
+    {
+        "id": "6",
+        "name": "L-Shaped Gaming Desk",
+        "category": "Furniture",
+        "description": "Large corner desk for gaming setup with built-in cable management.",
+        "price": 120.00
+    }
+]
